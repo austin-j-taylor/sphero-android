@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Sphero Android</string>
+    <string-array name="sphero_devices">
+        <item>"Sphero Mini</item>
+        <item>"Sphero Bolt</item>
+    </string-array>
+    <string-array name="sphero_statuses">
+        <item>"Awaiting configuration</item>
+        <item>"Not yet implemented</item>
+    </string-array>
+    <string name="title_activity_sphero_mini">SpheroMiniActivity</string>
+    <string name="action_settings">Settings</string>
+</resources>
