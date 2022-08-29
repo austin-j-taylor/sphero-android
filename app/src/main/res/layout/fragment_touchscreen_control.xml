@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TouchscreenControlFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_touchscreenControl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout_sliders"
+            android:layout_width="224dp"
+            android:layout_height="88dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/image_touchJoystick"
+            app:layout_constraintVertical_bias="0.0">
+
+            <ImageView
+                android:id="@+id/image_brightness"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/brightness"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBar_brightness"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/seekBar_brightness" />
+
+            <ImageView
+                android:id="@+id/image_speed"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/speed"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBar_speed"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/seekBar_speed" />
+
+            <ImageView
+                android:id="@+id/image_color"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/palette"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBar_color"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/seekBar_color" />
+
+            <SeekBar
+                android:id="@+id/seekBar_color"
+                android:layout_width="200dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/color_spectrum"
+                android:progress="100"
+                app:layout_constraintBottom_toTopOf="@+id/seekBar_speed"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <SeekBar
+                android:id="@+id/seekBar_speed"
+                android:layout_width="200dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="24dp"
+                android:progress="100"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <SeekBar
+                android:id="@+id/seekBar_brightness"
+                android:layout_width="200dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="24dp"
+                android:progress="100"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/seekBar_speed" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ToggleButton
+            android:id="@+id/toggleButton3"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="ToggleButton"
+            android:textOff="Wake Up"
+            android:textOn="Go to Sleep"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Set Heading"
+            app:layout_constraintStart_toEndOf="@+id/toggleButton3"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ImageView
+            android:id="@+id/image_touchJoystick"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="Touchscreen joystick"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView5"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@drawable/circle_outline" />
+
+        <ImageView
+            android:id="@+id/image_touchJoystickCore"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/circle_core"
+            app:layout_constraintBottom_toBottomOf="@+id/image_touchJoystick"
+            app:layout_constraintEnd_toEndOf="@+id/image_touchJoystick"
+            app:layout_constraintStart_toStartOf="@+id/image_touchJoystick"
+            app:layout_constraintTop_toTopOf="@+id/image_touchJoystick" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Touchscreen Joystick Controller"
+            app:layout_constraintEnd_toEndOf="@+id/image_touchJoystickCore"
+            app:layout_constraintStart_toStartOf="@+id/image_touchJoystickCore"
+            app:layout_constraintTop_toBottomOf="@+id/button" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

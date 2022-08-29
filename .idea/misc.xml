@@ -3,13 +3,27 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-night/circle_core.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-notnight/battery.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-notnight/brightness.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-notnight/circle_core.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-notnight/palette.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable-notnight/speed.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable/battery.xml" value="0.2905" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable/circle_core.xml" value="0.2815" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable/circle_outline.xml" value="0.2815" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/drawable/settings_black_24dp.xml" value="0.2205" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/activity_address.xml" value="0.176" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/activity_main.xml" value="0.176" />
-        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/activity_sphero_mini.xml" value="0.264" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/activity_sphero_mini.xml" value="0.2" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/content_sphero_mini.xml" value="0.21354166666666666" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/control_spinner_dropdown_item.xml" value="0.2980072463768116" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/device_row.xml" value="0.264" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/fragment_first.xml" value="0.17291666666666666" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/fragment_gamepad_control.xml" value="0.264" />
         <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/fragment_second.xml" value="0.17291666666666666" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/layout/fragment_touchscreen_control.xml" value="0.264" />
+        <entry key="..\:/Storage/Documents/GitHub/sphero-android/app/src/main/res/menu/menu_items.xml" value="0.21354166666666666" />
       </map>
     </option>
   </component>

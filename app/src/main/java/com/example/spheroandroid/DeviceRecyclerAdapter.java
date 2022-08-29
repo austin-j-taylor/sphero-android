@@ -1,28 +1,51 @@
 package com.example.spheroandroid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 // The list of Sphero devices that are presented on the main activity.
 // Clicking on a sphero device opens the activity that controls it.
 public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAdapter.DeviceViewHolder> {
 
-    String[] deviceNames, deviceStatuses;
-    Context context;
+    private static final String TAG = "DeviceRecyclerAdapter";
+    public static final String ACTION_DEVICE_ADDRESS =
+            "com.example.sphero-android.DeviceRecyclerAdapter.ACTION_DEVICE_ADDRESS";
+    public static final String EXTRA_DEVICE_ADDRESS =
+            "com.example.sphero-android.DeviceRecyclerAdapter.EXTRA_DEVICE_ADDRESS";
+    public static final String EXTRA_DEVICE_INDEX =
+            "com.example.sphero-android.DeviceRecyclerAdapter.EXTRA_DEVICE_INDEX";
 
-    public DeviceRecyclerAdapter(Context context, String deviceNames[], String deviceStatuses[]) {
+    String[] deviceNames, deviceStatuses, deviceAddresses;
+    MainActivity context;
+
+
+
+    public DeviceRecyclerAdapter(MainActivity context, String deviceNames[], String deviceStatuses[], String deviceAddresses[]) {
         this.context = context;
         this.deviceNames = deviceNames; // shouldn't have to worry about shallow copy
         this.deviceStatuses = deviceStatuses;
+        this.deviceAddresses = deviceAddresses;
     }
 
     @NonNull
@@ -41,8 +64,17 @@ public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAd
             @Override
             public void onClick(View view) {
                 if(holder.text_deviceName.getText().equals("Sphero Mini")) {
-                    Intent intent = new Intent(context, SpheroMiniActivity.class);
-                    context.startActivity(intent);
+
+                    // If the MAC address is specified, go into the control activity.
+                    if(deviceAddresses[holder.getAdapterPosition()].length() > 0) {
+
+                        Intent intent = new Intent(context, SpheroMiniActivity.class);
+                        intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddresses[holder.getAdapterPosition()]);
+                        context.startActivity(intent);
+                    } else {
+                        // If the MAC address is not specified, go into the address configuring activity.
+                        holder.startAddressActivity();
+                    }
                 } else {
                     // not yet implemented
                 }
@@ -63,6 +95,28 @@ public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAd
             super(itemView);
             text_deviceName = itemView.findViewById(R.id.text_deviceName);
             text_deviceStatus = itemView.findViewById(R.id.text_deviceStatus);
+
+
+            ImageView settingsButton = itemView.findViewById(R.id.imageView_deviceSettings);
+            settingsButton.setOnClickListener(view -> {
+                // Go into the address configuring activity.
+                startAddressActivity();
+            });
+
+        }
+        // Updates the Holder to reflect the data behind it
+        public void refresh() {
+            text_deviceName.setText(deviceNames[getAdapterPosition()]);
+            text_deviceStatus.setText(deviceStatuses[getAdapterPosition()]);
+        }
+        private void startAddressActivity() {
+            Intent intent = new Intent(context, AddressActivity.class);
+            intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddresses[getAdapterPosition()]);
+            intent.putExtra(EXTRA_DEVICE_INDEX, getAdapterPosition());
+            context.mStartForResult.launch(intent);
+
+//        Intent intent = new Intent(context, AddressActivity.class);
+//        context.startActivity(intent);
         }
     }
 }

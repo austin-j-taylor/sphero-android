@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.spheroandroid">
-
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
@@ -25,7 +24,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SpheroAndroid.NoActionBar"
         tools:targetApi="31">
-
+        <activity
+            android:name=".AddressActivity"
+            android:exported="false"
+            android:label="Sphero Mini Identification"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SpheroMiniActivity"
             android:exported="false"
@@ -34,7 +37,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="Device Selection">
+            android:label="Sphero Android">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
