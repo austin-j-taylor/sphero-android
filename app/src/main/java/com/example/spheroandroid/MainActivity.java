@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Reset the MAC address configurations. Wipe the address file.
     public void onClickButton_reset(View view) {
+        // TODO provide warning dialogue first
         try {
             File file = new File(getFilesDir(), FILENAME_ADDRESSES);
             FileOutputStream fos = new FileOutputStream(file);

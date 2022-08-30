@@ -13,6 +13,8 @@
         android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-sdk
+        android:minSdkVersion="23"/>
 
     <application
         android:allowBackup="true"

@@ -1,10 +1,25 @@
 package com.example.spheroandroid;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,7 +27,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import java.util.Set;
 
 // Hosts the control fragments (GamepadControlFragment and TouchscreenControlFragment) to get
 // input information from them and send it to the Sphero.
@@ -37,6 +55,49 @@ public class SpheroMiniActivity extends AppCompatActivity {
     private ConstraintLayout constraintLayout_connected;
     private ToggleButton button_connect;
     private ImageButton button_battery;
+    private TextView text_battery;
+
+    // Broadcast receiver for bluetooth callback actions.
+    // If a new action is added, make sure to add it to the filter in onCreate.
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+//                case BluetoothDevice.ACTION_ACL_CONNECTED:
+//                    if (ActivityCompat.checkSelfPermission(SpheroMiniActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+//                        finishPermissionsRejected();
+//                    }
+//                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//                    if ("Pro Controller".equals(device.getName())) {
+//
+//                    }
+//                    break;
+                case SpheroController.ACTION_BATTERY_AVAILABLE:
+                    double vbatt = intent.getDoubleExtra(SpheroController.EXTRA_BATTERY_VALUE, 0);
+                    if(vbatt < SPHERO_BATTERY_MIN)
+                        vbatt = SPHERO_BATTERY_MIN;
+                    if(vbatt > SPHERO_BATTERY_MAX)
+                        vbatt = SPHERO_BATTERY_MAX;
+                    // Convert into approximate percentage
+                    vbatt = 100 * (vbatt - SPHERO_BATTERY_MIN) / (SPHERO_BATTERY_MAX - SPHERO_BATTERY_MIN);
+                    text_battery.setText(String.format("~%d", (int)vbatt) + "%");
+                    break;
+            }
+            // TODO: on device connected callback: check if pro controller is now connected...?
+        }
+    };
+    // Register the permissions callback, which handles the user's response to the
+    // system permissions dialog. Save the return value, an instance of
+    // ActivityResultLauncher, as an instance variable.
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // TODO enable connect button here
+                    initBluetooth();
+                } else {
+                    finishPermissionsRejected();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +110,9 @@ public class SpheroMiniActivity extends AppCompatActivity {
         initViewModel();
         initUI(savedInstanceState);
         initBroadcasts();
-        initBluetooth();
-        initSphero();
+        if (checkBluetoothPermissions()) {
+            initBluetooth();
+        }
     }
 
     private void initViewModel() {
@@ -71,9 +133,13 @@ public class SpheroMiniActivity extends AppCompatActivity {
         viewModel.setAwake(false);
         viewModel.setResettingHeading(false);
     }
+
     private void initUI(Bundle savedInstanceState) {
 
         constraintLayout_connected = findViewById(R.id.constraintLayout_connected);
+        button_connect = findViewById(R.id.button_connect);
+        button_battery = findViewById(R.id.button_battery);
+        text_battery = findViewById(R.id.text_battery);
 
         // Set control fragment dropdown options
         Spinner spinner = findViewById(R.id.spinner_controlFragment);
@@ -87,9 +153,9 @@ public class SpheroMiniActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.i(TAG, (String)spinner.getItemAtPosition(i));
+                Log.i(TAG, (String) spinner.getItemAtPosition(i));
 
-                if(adapter.getItem(0).equals(spinner.getItemAtPosition(i).toString())) {
+                if (adapter.getItem(0).equals(spinner.getItemAtPosition(i).toString())) {
                     displayFragmentTouchscreen();
                 } else {
                     displayFragmentGamepad();
@@ -103,19 +169,15 @@ public class SpheroMiniActivity extends AppCompatActivity {
         });
         // Display initial fragment
         // Only create the initial fragment when the activity is first created
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
                     .add(R.id.fragmentContainerView, TouchscreenControlFragment.class, null)
                     .commit();
         }
 
-        // UI Callbacks
-        button_connect = findViewById(R.id.button_connect);
-        button_battery = findViewById(R.id.button_battery);
-
         button_connect.setOnCheckedChangeListener((compoundButton, isChecked) -> {
-            if(isChecked) {
+            if (isChecked) {
                 // Start connecting
                 viewModel.setConnectionState(SpheroMiniViewModel.ConnectionState.CONNECTING);
             } else {
@@ -124,14 +186,105 @@ public class SpheroMiniActivity extends AppCompatActivity {
             }
         });
     }
+
     private void initBroadcasts() {
-
+        // Register for broadcasts when bluetooth devices are discovered/connected/etc.,
+        // and for receiving data sent by the sphero (like battery updates)
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothDevice.ACTION_UUID);
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(SpheroController.ACTION_BATTERY_AVAILABLE);
+        registerReceiver(receiver, filter);
     }
+
+    private boolean checkBluetoothPermissions() {
+        // Request bluetooth permissions
+        boolean permissionsReady = true;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            permissionsReady = false;
+            // TODO disable connect button here
+            requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            permissionsReady = false;
+            // TODO disable connect button here
+            requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_SCAN);
+        }
+        // If we have the permissions ready, set up the bluetooth now.
+        // If not, wait for the callback to set up bluetooth.
+        return permissionsReady;
+    }
+
     private void initBluetooth() {
-
+        BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        if (bluetoothAdapter == null) {
+            // Device doesn't support Bluetooth
+            // TODO dialog "Device doesn't support bluetooth"
+            finish();
+        }
+        if (bluetoothAdapter.isEnabled()) {
+            initSphero();
+        } else {
+            // Bluetooth is disabled. Launch a prompt to enable it, then initialize sphero if done.
+            ActivityResultLauncher<Intent> turnOnBTResultLauncher = registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                initSphero();
+                            }
+                        }
+                    });
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            turnOnBTResultLauncher.launch(enableBtIntent);
+        }
     }
-    private void initSphero() {
 
+    private void initSphero() {
+        sphero = new SpheroController();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(receiver);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            if (bluetoothAdapter != null)
+                bluetoothAdapter.cancelDiscovery();
+        }
+        if (sphero != null) {
+            sphero.destroy();
+            sphero = null;
+        }
+    }
+
+    // Called when a permissions check fails, preventing normal operation of the app.
+    private void finishPermissionsRejected() {
+        // TODO: dialog box saying permissions rejected
+        finish();
+    }
+
+    private boolean checkIfControllerPaired() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            finishPermissionsRejected();
+        }
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices) {
+                String deviceName = device.getName();
+//                String deviceHardwareAddress = device.getAddress(); // MAC address
+                if("Pro Controller".equals(deviceName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void displayFragmentTouchscreen() {
@@ -172,6 +325,10 @@ public class SpheroMiniActivity extends AppCompatActivity {
                 constraintLayout_connected.setVisibility(View.VISIBLE);
                 button_connect.setEnabled(true);
                 button_connect.setChecked(true);
+                // Send configuration commands
+
+
+
                 break;
             case DISCONNECTING:
                 constraintLayout_connected.setVisibility(View.INVISIBLE);
@@ -217,6 +374,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //
 //                sphero.rollSphero(speed, heading);
     }
+
 
     public void onClickButton_battery(View view) {
 
