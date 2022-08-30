@@ -1,36 +1,20 @@
 package com.example.spheroandroid;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 // The list of Sphero devices that are presented on the main activity.
 // Clicking on a sphero device opens the activity that controls it.
 public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAdapter.DeviceViewHolder> {
 
     private static final String TAG = "DeviceRecyclerAdapter";
-    public static final String ACTION_DEVICE_ADDRESS =
-            "com.example.sphero-android.DeviceRecyclerAdapter.ACTION_DEVICE_ADDRESS";
     public static final String EXTRA_DEVICE_ADDRESS =
             "com.example.sphero-android.DeviceRecyclerAdapter.EXTRA_DEVICE_ADDRESS";
     public static final String EXTRA_DEVICE_INDEX =
@@ -39,9 +23,7 @@ public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAd
     String[] deviceNames, deviceStatuses, deviceAddresses;
     MainActivity context;
 
-
-
-    public DeviceRecyclerAdapter(MainActivity context, String deviceNames[], String deviceStatuses[], String deviceAddresses[]) {
+    public DeviceRecyclerAdapter(MainActivity context, String[] deviceNames, String[] deviceStatuses, String[] deviceAddresses) {
         this.context = context;
         this.deviceNames = deviceNames; // shouldn't have to worry about shallow copy
         this.deviceStatuses = deviceStatuses;
@@ -60,24 +42,21 @@ public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAd
     public void onBindViewHolder(@NonNull DeviceViewHolder holder, int position) {
         holder.text_deviceName.setText(deviceNames[position]);
         holder.text_deviceStatus.setText(deviceStatuses[position]);
-        holder.itemView.findViewById(R.id.button_item).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(holder.text_deviceName.getText().equals("Sphero Mini")) {
+        holder.itemView.findViewById(R.id.button_item).setOnClickListener(view -> {
+            if(holder.text_deviceName.getText().equals("Sphero Mini")) {
 
-                    // If the MAC address is specified, go into the control activity.
-                    if(deviceAddresses[holder.getAdapterPosition()].length() > 0) {
+                // If the MAC address is specified, go into the control activity.
+                if(deviceAddresses[holder.getAdapterPosition()].length() > 0) {
 
-                        Intent intent = new Intent(context, SpheroMiniActivity.class);
-                        intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddresses[holder.getAdapterPosition()]);
-                        context.startActivity(intent);
-                    } else {
-                        // If the MAC address is not specified, go into the address configuring activity.
-                        holder.startAddressActivity();
-                    }
+                    Intent intent = new Intent(context, SpheroMiniActivity.class);
+                    intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddresses[holder.getAdapterPosition()]);
+                    context.startActivity(intent);
                 } else {
-                    // not yet implemented
+                    // If the MAC address is not specified, go into the address configuring activity.
+                    holder.startAddressActivity();
                 }
+            } else {
+                // Sphero Bolt. Not yet implemented
             }
         });
     }
@@ -109,6 +88,7 @@ public class DeviceRecyclerAdapter extends RecyclerView.Adapter<DeviceRecyclerAd
             text_deviceName.setText(deviceNames[getAdapterPosition()]);
             text_deviceStatus.setText(deviceStatuses[getAdapterPosition()]);
         }
+        // Start the MAC address selection activity to change the address for this device.
         private void startAddressActivity() {
             Intent intent = new Intent(context, AddressActivity.class);
             intent.putExtra(EXTRA_DEVICE_ADDRESS, deviceAddresses[getAdapterPosition()]);

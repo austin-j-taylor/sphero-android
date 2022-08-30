@@ -3,6 +3,7 @@ package com.example.spheroandroid;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ public class TouchscreenControlFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private SpheroMiniViewModel viewModel;
 
     public TouchscreenControlFragment() {
         // Required empty public constructor
@@ -60,5 +62,32 @@ public class TouchscreenControlFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_touchscreen_control, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        viewModel = new ViewModelProvider(requireActivity()).get(SpheroMiniViewModel.class);
+
+        viewModel.getConnectionState().observe(getViewLifecycleOwner(), connectionState -> observeChangeConnectionState());
+        viewModel.getSpeed().observe(getViewLifecycleOwner(), speed -> observeChangeSpeed());
+        viewModel.getLedBrightness().observe(getViewLifecycleOwner(), ledBrightness -> observeChangeLedBrightness());
+        viewModel.getLedHue().observe(getViewLifecycleOwner(), ledHue -> observeChangeLedHue());
+        viewModel.getAwake().observe(getViewLifecycleOwner(), awake -> observeChangeAwake());
+    }
+
+    private void observeChangeConnectionState() {
+        // Do nothing
+    }
+    private void observeChangeSpeed() {
+
+    }
+    private void observeChangeLedBrightness() {
+
+    }
+    private void observeChangeLedHue() {
+
+    }
+    private void observeChangeAwake() {
+
     }
 }

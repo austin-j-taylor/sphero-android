@@ -181,7 +181,7 @@
                 android:id="@+id/image_x"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:alpha="0.25"
+                android:alpha="1"
                 android:contentDescription="X"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -286,6 +286,15 @@
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="@+id/text_gamepadMode"
             app:layout_constraintTop_toBottomOf="@+id/text_gamepadModeSelected0" />
+
+        <TextView
+            android:id="@+id/text_gamepadAwake"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sleep"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
+            app:layout_constraintEnd_toEndOf="@+id/constraintLayout3"
+            app:layout_constraintStart_toStartOf="@+id/constraintLayout3" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

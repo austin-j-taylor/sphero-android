@@ -3,6 +3,7 @@ package com.example.spheroandroid;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ public class GamepadControlFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private SpheroMiniViewModel viewModel;
 
     public GamepadControlFragment() {
         // Required empty public constructor
@@ -56,6 +58,13 @@ public class GamepadControlFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        viewModel = new ViewModelProvider(requireActivity()).get(SpheroMiniViewModel.class);
+
+        viewModel.getConnectionState().observe(getViewLifecycleOwner(), connectionState -> observeChangeConnectionState());
+        viewModel.getSpeed().observe(getViewLifecycleOwner(), speed -> observeChangeSpeed());
+        viewModel.getLedBrightness().observe(getViewLifecycleOwner(), ledBrightness -> observeChangeLedBrightness());
+        viewModel.getLedHue().observe(getViewLifecycleOwner(), ledHue -> observeChangeLedHue());
+        viewModel.getAwake().observe(getViewLifecycleOwner(), awake -> observeChangeAwake());
     }
 
     @Override
@@ -63,5 +72,28 @@ public class GamepadControlFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_gamepad_control, container, false);
+    }
+
+
+    private void observeChangeConnectionState() {
+        // Update the controls labels to reflect the connected/disconnect state
+        // Hide most controls when disconnected
+    }
+    private void observeChangeSpeed() {
+        // Do nothing
+    }
+    private void observeChangeLedBrightness() {
+        // Update the controls labels to reflect the current brightness, or do nothing
+    }
+    private void observeChangeLedHue() {
+        // Update the controls labels to reflect the current hue, or do nothing
+    }
+    private void observeChangeAwake() {
+        // Update the controls labels to reflect the current awake status
+        // Change Wake Up/Sleep text
+    }
+    private void changeGamepadMode() {
+        // Update the gamepad mode - driving or changing LED settings
+        // Change joystick/button opacity and labels
     }
 }

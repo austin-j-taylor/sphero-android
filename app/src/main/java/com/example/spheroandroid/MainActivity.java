@@ -14,19 +14,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.material.shape.InterpolateOnScrollPositionChangeHelper;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
+// Entry point for the application.
+// Handles sphero device selection.
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "AppCompatActivity";
@@ -36,17 +35,24 @@ public class MainActivity extends AppCompatActivity {
     String[] deviceNames, deviceStatuses, deviceAddresses;
     RecyclerView recyclerView_main;
 
+    // Callback for when the MAC Address selection activity finishes, giving this activity
+    // the new address.
+    // Write it to the address file and let the recycler view know that a change has occured.
     public ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent intent = result.getData();
-                        String address = intent.getStringExtra(DeviceRecyclerAdapter.EXTRA_DEVICE_ADDRESS);
+                        if(intent == null)
+                            return;
                         int index = intent.getIntExtra(DeviceRecyclerAdapter.EXTRA_DEVICE_INDEX, 0);
+                        String address = intent.getStringExtra(DeviceRecyclerAdapter.EXTRA_DEVICE_ADDRESS);
                         deviceAddresses[index] = address;
                         deviceStatuses[index] = "Address: " + address;
-                        ((DeviceRecyclerAdapter.DeviceViewHolder)recyclerView_main.findViewHolderForAdapterPosition(index)).refresh();
+                        RecyclerView.ViewHolder thisHolder = recyclerView_main.findViewHolderForAdapterPosition(index);
+                        if(thisHolder != null)
+                            ((DeviceRecyclerAdapter.DeviceViewHolder)thisHolder).refresh();
                         Log.i(TAG, "Got RESULT_OK from AddressActivity with address " + address);
                         // Save address list.
                         try {
@@ -114,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Reset the MAC address configurations. Wipe the address file.
     public void onClickButton_reset(View view) {
         try {
             File file = new File(getFilesDir(), FILENAME_ADDRESSES);
@@ -125,7 +132,9 @@ public class MainActivity extends AppCompatActivity {
                 for(int i = 0; i < NUM_DEVICES; i++) {
                     deviceStatuses[i] = statuses[i];
                     deviceAddresses[i] = "";
-                    ((DeviceRecyclerAdapter.DeviceViewHolder)recyclerView_main.findViewHolderForAdapterPosition(i)).refresh();
+                    RecyclerView.ViewHolder thisHolder = recyclerView_main.findViewHolderForAdapterPosition(i);
+                    if(thisHolder != null)
+                        ((DeviceRecyclerAdapter.DeviceViewHolder)thisHolder).refresh();
 
                     writer.write(deviceAddresses[i]);
                     if( i < NUM_DEVICES - 1)
@@ -141,18 +150,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        // Update and save MAC addresses
-//        String deviceAddress = data.getStringExtra(DeviceRecyclerAdapter.EXTRA_DEVICE_ADDRESS);
-//        int deviceIndex = data.getIntExtra(DeviceRecyclerAdapter.EXTRA_DEVICE_INDEX, -1);
-//        if(deviceIndex < 0 || deviceIndex >= NUM_DEVICES) {
-//            Log.e(TAG, "Activity result that did not have an index in range: " + deviceIndex);
-//        } else {
-//            deviceAddresses[deviceIndex] = deviceAddress;
-//            deviceStatuses[deviceIndex] = "MAC Address: " + deviceAddress;
-//        }
-//    }
 }
