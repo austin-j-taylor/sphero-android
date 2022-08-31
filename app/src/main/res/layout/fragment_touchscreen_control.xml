@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".TouchscreenControlFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout_touchscreenControl"
         android:layout_width="match_parent"
@@ -93,6 +91,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:checked="true"
             android:text="ToggleButton"
             android:textOff="Wake Up"
             android:textOn="Go to Sleep"
@@ -148,7 +147,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Touchscreen Joystick Controller"
+            android:text="Touchscreen Joystick"
             app:layout_constraintEnd_toEndOf="@+id/image_touchJoystickCore"
             app:layout_constraintStart_toStartOf="@+id/image_touchJoystickCore"
             app:layout_constraintTop_toBottomOf="@+id/button_heading" />

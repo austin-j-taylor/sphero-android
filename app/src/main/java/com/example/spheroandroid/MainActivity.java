@@ -5,6 +5,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,6 +14,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+
+import com.example.spheroandroid.dialog.BluetoothPermissionsDialogue;
+import com.example.spheroandroid.dialog.DeleteConfigDialogue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -122,7 +126,12 @@ public class MainActivity extends AppCompatActivity {
 
     // Reset the MAC address configurations. Wipe the address file.
     public void onClickButton_reset(View view) {
-        // TODO provide warning dialogue first
+        DialogFragment info = new DeleteConfigDialogue();
+        info.show(getSupportFragmentManager(), "DeleteConfigDialogue");
+    }
+
+    // Called when the DeleteConfigDialogue returns, confirming to delete the address configuration.
+    public void onConfigDeleteListener() {
         try {
             File file = new File(getFilesDir(), FILENAME_ADDRESSES);
             FileOutputStream fos = new FileOutputStream(file);
@@ -150,5 +159,4 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 }

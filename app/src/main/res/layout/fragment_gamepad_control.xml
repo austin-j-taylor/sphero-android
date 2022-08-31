@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".GamepadControlFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout_gamepadControl"
         android:layout_width="match_parent"
@@ -190,16 +188,16 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/text_gamepadConnext"
+            android:id="@+id/text_gamepadConnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Connect"
+            android:text="@string/connect"
             app:layout_constraintBottom_toBottomOf="@+id/image_plus"
             app:layout_constraintStart_toEndOf="@+id/image_plus"
             app:layout_constraintTop_toTopOf="@+id/image_plus" />
 
         <TextView
-            android:id="@+id/text_gamepadHeading"
+            android:id="@+id/text_gamepadR1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="(Hold) Set Heading"
@@ -210,7 +208,7 @@
             android:id="@+id/text_gamepadStickLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Move"
+            android:text="@string/gamepad_joystick_move"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
             app:layout_constraintEnd_toEndOf="@+id/constraintLayout2"
             app:layout_constraintStart_toStartOf="@+id/constraintLayout2" />
@@ -219,7 +217,7 @@
             android:id="@+id/text_gamepadB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="(Hold) Sprint"
+            android:text="@string/gamepad_moveFast"
             app:layout_constraintEnd_toEndOf="@+id/constraintLayout3"
             app:layout_constraintStart_toStartOf="@+id/constraintLayout3"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout3" />
@@ -228,7 +226,7 @@
             android:id="@+id/text_gamepadY"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="(Hold) Move Slowly"
+            android:text="@string/gamepad_moveSlow"
             app:layout_constraintBottom_toBottomOf="@+id/constraintLayout3"
             app:layout_constraintEnd_toStartOf="@+id/constraintLayout3"
             app:layout_constraintTop_toTopOf="@+id/constraintLayout3" />
@@ -245,7 +243,7 @@
             android:id="@+id/text_gamepadMode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Change Mode"
+            android:text="@string/gamepad_mode"
             app:layout_constraintBottom_toBottomOf="@+id/image_minus"
             app:layout_constraintEnd_toStartOf="@+id/image_minus"
             app:layout_constraintTop_toTopOf="@+id/image_minus" />
@@ -254,7 +252,7 @@
             android:id="@+id/text_gamepadMode0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Driving"
+            android:text="@string/gamepad_mode0"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/text_gamepadModeSelected0"
             app:layout_constraintTop_toTopOf="@+id/text_gamepadModeSelected0" />
@@ -264,7 +262,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LED Configuration"
-            app:layout_constraintStart_toEndOf="@+id/text_gamepadModeSelected"
+            app:layout_constraintStart_toEndOf="@+id/text_gamepadModeSelected1"
             app:layout_constraintTop_toBottomOf="@+id/text_gamepadModeSelected0" />
 
         <TextView
@@ -272,26 +270,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text=">"
+            android:text="@string/gamepad_modeSelect"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/text_gamepadMode"
             app:layout_constraintTop_toBottomOf="@+id/text_gamepadMode" />
 
         <TextView
-            android:id="@+id/text_gamepadModeSelected"
+            android:id="@+id/text_gamepadModeSelected1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=">"
+            android:text="@string/gamepad_modeSelect"
             android:textStyle="bold"
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="@+id/text_gamepadMode"
             app:layout_constraintTop_toBottomOf="@+id/text_gamepadModeSelected0" />
 
         <TextView
-            android:id="@+id/text_gamepadAwake"
+            android:id="@+id/text_gamepadX"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sleep"
+            android:text="@string/gamepad_sleep"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
             app:layout_constraintEnd_toEndOf="@+id/constraintLayout3"
             app:layout_constraintStart_toStartOf="@+id/constraintLayout3" />

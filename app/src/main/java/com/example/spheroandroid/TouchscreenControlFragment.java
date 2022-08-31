@@ -70,6 +70,7 @@ public class TouchscreenControlFragment extends Fragment {
         viewModel.getLedBrightness().observe(getViewLifecycleOwner(), ledBrightness -> observeChangeLedBrightness());
         viewModel.getLedColor().observe(getViewLifecycleOwner(), ledHue -> observeChangeLedColor());
         viewModel.getAwake().observe(getViewLifecycleOwner(), awake -> observeChangeAwake());
+        viewModel.getResettingHeading().observe(getViewLifecycleOwner(), awake -> observeResettingHeading());
 
         button_awake = getView().findViewById(R.id.button_awake);
         button_heading = getView().findViewById(R.id.button_heading);
@@ -79,6 +80,11 @@ public class TouchscreenControlFragment extends Fragment {
         touchJoystick = getView().findViewById(R.id.image_touchJoystick);
         touchJoystickCore = getView().findViewById(R.id.image_touchJoystickCore);
         touchJoystickCoreEmpty = getView().findViewById(R.id.image_touchJoystickCoreEmpty);
+
+        // Initial values from view model
+        seekBar_speed.setProgress(viewModel.getSpeed().getValue());
+        seekBar_brightness.setProgress(viewModel.getLedBrightness().getValue());
+        seekBar_color.setProgress(viewModel.getLedColor().getValue());
 
         // UI callbacks
         seekBar_speed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -100,19 +106,16 @@ public class TouchscreenControlFragment extends Fragment {
         seekBar_color.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if(i == 100) {
-                    viewModel.setLedColor(Color.WHITE);
-                } else {
-                    // Convert slider to RGB color
-                    float[] hsv = {(i * 360) / 100, 1, 1};
-                    int argb = Color.HSVToColor(hsv);
-                    viewModel.setLedColor(argb);
-                }
+                viewModel.setLedColor(i);
             }
             public void onStartTrackingTouch(SeekBar seekBar) {}
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-
+        button_awake.setOnCheckedChangeListener((compoundButton, isChecked) -> viewModel.setAwake(isChecked));
+        button_heading.setOnClickListener(view1 -> {
+            viewModel.setResettingHeading(true);
+            button_heading.setEnabled(false);
+        });
 
         // Touch listener for touch joystick
         touchJoystick.setOnTouchListener((touchView, event) -> {
@@ -145,9 +148,10 @@ public class TouchscreenControlFragment extends Fragment {
                     touchJoystickCore.animate().x(touchJoystickCoreEmpty.getX()).y(touchJoystickCoreEmpty.getY()).setDuration(0).start();
 
                     // Stop setting heading, or stop rolling
-                    if(Boolean.TRUE.equals(viewModel.getResettingHeading().getValue())) // null check
+                    if(Boolean.TRUE.equals(viewModel.getResettingHeading().getValue())) {// null check
                         viewModel.setResettingHeading(false);
-                    else
+                        viewModel.postRoll(0, 0);
+                    } else
                         viewModel.postRoll(0, 0);
 
                     return true;
@@ -158,18 +162,27 @@ public class TouchscreenControlFragment extends Fragment {
     }
 
     private void observeChangeConnectionState() {
-        // TODO Reset awake button state when disconnecting
+        // Reset awake button state when disconnecting and reconnecting
+        if(SpheroController.ConnectionState.CONNECTED.equals(viewModel.getConnectionState())) {
+            button_awake.setChecked(false);
+        }
     }
     private void observeChangeSpeed() {
-        // TODO  Set slider position
     }
     private void observeChangeLedBrightness() {
-        // TODO  Set slider position
     }
     private void observeChangeLedColor() {
-        // TODO  Set slider position
     }
     private void observeChangeAwake() {
-        // TODO  Set awake button state
+        if(viewModel.getAwake().getValue()) {
+            button_heading.setEnabled(true);
+        } else {
+            button_heading.setEnabled(false);
+        }
+    }
+    private void observeResettingHeading() {
+        if(!viewModel.getResettingHeading().getValue()) {
+            button_heading.setEnabled(true);
+        }
     }
 }

@@ -10,6 +10,37 @@
     </string-array>
     <string name="title_activity_sphero_mini">SpheroMiniActivity</string>
     <string name="action_settings">Settings</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Dialog box strings -->
+    <string name="missingBluetoothPermissions">Bluetooth permissions were not enabled.\nThis app needs them to connect to sphero devices.\n\nTo grant permissions, go to Settings > Manage Apps > Sphero Android > Permissions.
+    </string>
+    <string name="missingBluetoothSupport">This device does not support bluetooth.\nThis app needs it to connect to sphero devices.
+    </string>
+    <string name="scanFailed">Could not find the sphero.\n\nIf the sphero is unlit, it may be in deep sleep.\nTry plugging it into a charging cable to reset it.\nTry turning off Bluetooth and turning it back on.
+    </string>
+    <string name="deleteConfig">
+        This will delete saved MAC addresses.
+    </string>
+    <string name="deleteConfigTitle">
+        Delete Configuration Data
+    </string>
+    <string name="close">Close</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <!-- Gamepad strings -->
+    <string name="connect">Connect</string>
+    <string name="connecting">Connecting...</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="disconnecting">Disconnecting...</string>
+    <string name="gamepad_joystick_move">Move</string>
+    <string name="gamepad_joystick_hue">LED Hue</string>
+    <string name="gamepad_joystick_brightness">LED Brightness</string>
+    <string name="gamepad_wake">Wake Up</string>
+    <string name="gamepad_sleep">Sleep</string>
+    <string name="gamepad_moveSlow">(Hold) Move Slowly</string>
+    <string name="gamepad_moveFast">(Hold) Sprint</string>
+    <string name="gamepad_mode">Change Mode</string>
+    <string name="gamepad_mode0">Driving</string>
+    <string name="gamepad_mode1">LED Configuration</string>
+    <string name="gamepad_modeSelect"><![CDATA[>]]></string>
 </resources>

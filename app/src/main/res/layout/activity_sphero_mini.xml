@@ -31,12 +31,13 @@
 
     <ToggleButton
         android:id="@+id/button_connect"
-        android:layout_width="140dp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:enabled="false"
         android:text="ToggleButton"
-        android:textOff="Connect"
-        android:textOn="Disconnect"
+        android:textOff="@string/connect"
+        android:textOn="@string/disconnect"
         app:layout_constraintBottom_toBottomOf="@+id/textView6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView6" />
@@ -49,6 +50,7 @@
         android:layout_marginStart="8dp"
         android:text="Disconnected"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
@@ -60,7 +62,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView6"
+        app:layout_constraintTop_toBottomOf="@+id/button_connect"
         app:layout_constraintVertical_bias="0.0">
 
         <Spinner
