@@ -292,6 +292,8 @@ public class SpheroController {
             commandQueue = new ArrayDeque<>();
         }
 
+        // Thread loop. Continuously runs as long as the activity is open.
+        // Processes messages sent by the user.
         public void run() {
 
             Looper.prepare();
@@ -299,6 +301,7 @@ public class SpheroController {
                 public void handleMessage(Message msg) {
                     // Handle messages here...
 //                    Log.i(TAG, "Processing SpheroController message: " + msg.what);
+                    // TODO: commands for starting/stopping subscribing to sensor data.
                     switch (msg.what) {
                         case MSG_CMD_CONNECT:
                             command_connect();
@@ -417,6 +420,7 @@ public class SpheroController {
                     }, 200);
                 } else if (BluetoothSpheroController.ACTION_DATA_AVAILABLE.equals(action)) {
                     // Data available from the sphero.
+                    // TODO: publish sensor data.
                     byte[] data = intent.getByteArrayExtra(BluetoothSpheroController.EXTRA_DATA);
                     SpheroGattAttributes.lookup(intent.getStringExtra(BluetoothSpheroController.EXTRA_DATA_UUID));
                     receive_response(data);
@@ -886,6 +890,7 @@ public class SpheroController {
                     for(int i = 0; i < payloadLength; i++)
                         payload[i] = buffer[5 + i]; // buffer[5] would be the start of the payload
 
+                    // TODO: parse and publish sensor data.
                     if((flags & SpheroConstants.isResponse) > 0) { // acknowledgement response
                         switch(devid) {
                             case SpheroConstants.powerInfo:
