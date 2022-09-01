@@ -33,8 +33,9 @@
     <string name="disconnect">Disconnect</string>
     <string name="disconnecting">Disconnecting...</string>
     <string name="gamepad_joystick_move">Move</string>
-    <string name="gamepad_joystick_hue">LED Hue</string>
-    <string name="gamepad_joystick_brightness">LED Brightness</string>
+    <string name="gamepad_joystick_heading">Set Heading</string>
+    <string name="gamepad_joystick_hue">LED Hue\n(Click) for white</string>
+    <string name="gamepad_joystick_brightness">LED Brightness\n(Click) for max</string>
     <string name="gamepad_wake">Wake Up</string>
     <string name="gamepad_sleep">Sleep</string>
     <string name="gamepad_moveSlow">(Hold) Move Slowly</string>

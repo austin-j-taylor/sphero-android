@@ -30,6 +30,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -75,6 +76,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            // TODO process GATT broadcasts to update connection status text with things like "scanning... gat server found...
             switch (action) {
 //                case BluetoothDevice.ACTION_ACL_CONNECTED:
 //                    if (ActivityCompat.checkSelfPermission(SpheroMiniActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -194,7 +196,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
                     .commit();
         }
         // And hide it until we connect to the sphero
-        constraintLayout_connected.setVisibility(View.INVISIBLE);
+        MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
 
         button_connect.setOnCheckedChangeListener(this::onCheckedChanged_connect);
     }
@@ -320,6 +322,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .replace(R.id.fragmentContainerView, TouchscreenControlFragment.class, null)
                 .commit();
+
     }
     private void displayFragmentGamepad() {
         getSupportFragmentManager().beginTransaction()
@@ -342,13 +345,18 @@ public class SpheroMiniActivity extends AppCompatActivity {
         button_connect.setOnCheckedChangeListener(null);
         switch(connectionState) {
             case DISCONNECTED:
-                constraintLayout_connected.setVisibility(View.INVISIBLE);
+//                constraintLayout_connected.setVisibility(View.INVISIBLE);
+                MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
+                constraintLayout_connected.setEnabled(false);
                 button_connect.setTextOff(getString(R.string.connect));
                 button_connect.setEnabled(true);
                 button_connect.setChecked(false);
+                viewModel.setAwake(false); // This will call observeChangeAwake, but because the state is disconnected, it won't send a command to the sphero.
                 break;
             case CONNECTING:
-                constraintLayout_connected.setVisibility(View.INVISIBLE);
+//                constraintLayout_connected.setVisibility(View.INVISIBLE);
+                MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
+                constraintLayout_connected.setEnabled(false);
                 button_connect.setTextOn(getString(R.string.connecting));
                 button_connect.setEnabled(false);
                 button_connect.setChecked(true);
@@ -357,7 +365,9 @@ public class SpheroMiniActivity extends AppCompatActivity {
 
                 break;
             case CONNECTED:
-                constraintLayout_connected.setVisibility(View.VISIBLE);
+//                constraintLayout_connected.setVisibility(View.VISIBLE);
+                MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, true);
+                constraintLayout_connected.setEnabled(true);
                 button_connect.setTextOn(getString(R.string.disconnect));
                 button_connect.setEnabled(true);
                 button_connect.setChecked(true);
@@ -369,7 +379,9 @@ public class SpheroMiniActivity extends AppCompatActivity {
 
                 break;
             case DISCONNECTING:
-                constraintLayout_connected.setVisibility(View.INVISIBLE);
+//                constraintLayout_connected.setVisibility(View.INVISIBLE);
+                MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
+                constraintLayout_connected.setEnabled(false);
                 button_connect.setTextOff(getString(R.string.disconnecting));
                 button_connect.setEnabled(false);
                 button_connect.setChecked(false);

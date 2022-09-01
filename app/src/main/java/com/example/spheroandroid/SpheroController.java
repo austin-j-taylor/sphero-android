@@ -123,24 +123,36 @@ public class SpheroController {
         if (!scanning) {
             // Stops scanning after a predefined scan period.
             Log.i(TAG, "Starting scan for Sphero...");
-            scanHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (scanning) {
-                        if (ActivityCompat.checkSelfPermission(parentContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                            return;
-                        }
-                        Intent intent = new Intent(ACTION_SCAN_FAILED);
-                        parentContext.sendBroadcast(intent);
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            if(adapter.isEnabled()) {
+                scanHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (scanning) {
+                            if (ActivityCompat.checkSelfPermission(parentContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                                return;
+                            }
+                            Intent intent = new Intent(ACTION_SCAN_FAILED);
+                            parentContext.sendBroadcast(intent);
 
-                        scanning = false;
-                        bluetoothLeScanner.stopScan(scanCallback);
+                            scanning = false;
+                            if(adapter.isEnabled())
+                                bluetoothLeScanner.stopScan(scanCallback);
+                            else
+                                Log.e(TAG, "Attempting to finish scan when bluetooth adapter is not enabled.");
+
 //                        activity.setEnabled_connectToSphero(false);
+                        }
                     }
-                }
-            }, SCAN_PERIOD);
-            scanning = true;
-            bluetoothLeScanner.startScan(scanCallback);
+                }, SCAN_PERIOD);
+                scanning = true;
+                bluetoothLeScanner.startScan(scanCallback);
+            }
+            else {
+                Log.e(TAG, "Attempting to scan when bluetooth adapter is not enabled.");
+                Intent intent = new Intent(ACTION_SCAN_FAILED);
+                parentContext.sendBroadcast(intent);
+            }
         } else {
             // already scanning
         }
@@ -513,7 +525,7 @@ public class SpheroController {
 
             // Start the BLE Sphero Controller, or connect to it if it already exists
             if(spheroService == null) {
-                // TODO: think hard about this. All the callbacks are happening on the main thread.
+                // These receiver callbacks happen on the main thread.
                 parentContext.registerReceiver(gattUpdateReceiver, makeGattUpdateIntentFilter(), null, messageHandler);
                 spheroService = new BluetoothSpheroController();
                 Log.i(TAG, "Created BLE \"service.\"");
@@ -769,8 +781,8 @@ public class SpheroController {
 
             // Resend the command, if it hasn't been sent too many times already.
             // Also don't resend it if it's been discarded due to too many commands being sent too quickly.
-            if((sendAttemptsCount >= resendAttempts || removedCommand.isDiscarded()) || removedCommand == null) {
-                Log.w(TAG, "Command failed to send " + sendAttemptsCount + " time(s): " + String.format("%02X %02X", command.deviceID, command.commandID) + " | sequence: " + command.sequence);
+            if(removedCommand == null || (sendAttemptsCount >= resendAttempts || removedCommand.isDiscarded())) {
+                Log.w(TAG, "Command failed to send " + sendAttemptsCount + " time(s): " + String.format("%02X %02X  | sequence: %02X", command.deviceID, command.commandID, command.sequence));
 
                 // Give up on this command. send the next one.
                 send_nextCommandInQueue();
@@ -1065,7 +1077,7 @@ public class SpheroController {
 
             public int getDeviceID() { return deviceID; }
             public int getCommandID() { return commandID; }
-            public int getSequence() {
+            public byte getSequence() {
                 return sequence;
             }
             public boolean getContinuous() {

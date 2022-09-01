@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.example.spheroandroid.dialog.BluetoothPermissionsDialogue;
 import com.example.spheroandroid.dialog.DeleteConfigDialogue;
@@ -157,6 +158,18 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        }
+    }
+    // Disables/enables all children within a view.
+    // Used to turn controls on/off when connected/disconnected.
+    public static void setViewAndChildrenEnabled(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                setViewAndChildrenEnabled(child, enabled);
+            }
         }
     }
 }

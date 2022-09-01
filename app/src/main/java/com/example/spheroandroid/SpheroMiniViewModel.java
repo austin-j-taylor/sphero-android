@@ -7,13 +7,17 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import static com.example.spheroandroid.SpheroController.ConnectionState;
 
+import android.util.Log;
+
 // View model used for storing data used by SpheroMiniActivity and the control fragments.
 // This allows us to decouple the control fragments from the SpheroMiniActivity that communicates with the
 // SpheroController.
 public class SpheroMiniViewModel extends ViewModel {
 
+    public final static int SPEED_DEFAULT = 100;
+
     private final MutableLiveData<ConnectionState> connectionState = new MutableLiveData<>(ConnectionState.DISCONNECTED);
-    private final MutableLiveData<Integer> speed = new MutableLiveData<>(100); // 0-100%
+    private final MutableLiveData<Integer> speed = new MutableLiveData<>(SPEED_DEFAULT); // 0-100%
     private final MutableLiveData<Integer> ledBrightness = new MutableLiveData<>(100); // 0-100%
     private final MutableLiveData<Integer> ledColor = new MutableLiveData<>(100); // 0-100% hue
     private final MutableLiveData<Boolean> awake = new MutableLiveData<>(false);
@@ -27,6 +31,7 @@ public class SpheroMiniViewModel extends ViewModel {
         connectionState.setValue(state);
     }
     public void setSpeed(int speed) {
+        Log.i("SpheroMiniViewModel", "" + speed);
         this.speed.setValue(speed);
     }
     public void setLedBrightness(int ledBrightness) {

@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.ToggleButton;
@@ -56,6 +57,7 @@ public class TouchscreenControlFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_touchscreen_control, container, false);
     }
@@ -63,6 +65,7 @@ public class TouchscreenControlFragment extends Fragment {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(SpheroMiniViewModel.class);
 
         viewModel.getConnectionState().observe(getViewLifecycleOwner(), connectionState -> observeChangeConnectionState());
@@ -111,7 +114,7 @@ public class TouchscreenControlFragment extends Fragment {
             public void onStartTrackingTouch(SeekBar seekBar) {}
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-        button_awake.setOnCheckedChangeListener((compoundButton, isChecked) -> viewModel.setAwake(isChecked));
+        button_awake.setOnCheckedChangeListener(this::onCheckedChanged_awake);
         button_heading.setOnClickListener(view1 -> {
             viewModel.setResettingHeading(true);
             button_heading.setEnabled(false);
@@ -162,10 +165,15 @@ public class TouchscreenControlFragment extends Fragment {
     }
 
     private void observeChangeConnectionState() {
+        button_awake.setOnCheckedChangeListener(null);
         // Reset awake button state when disconnecting and reconnecting
-        if(SpheroController.ConnectionState.CONNECTED.equals(viewModel.getConnectionState())) {
-            button_awake.setChecked(false);
+        if(SpheroController.ConnectionState.CONNECTED.equals(viewModel.getConnectionState().getValue())) {
+            MainActivity.setViewAndChildrenEnabled(getView().findViewById(R.id.frameLayout_touchscreen), true);
+            button_awake.setChecked(true);
+        } else {
+            MainActivity.setViewAndChildrenEnabled(getView().findViewById(R.id.frameLayout_touchscreen), false);
         }
+        button_awake.setOnCheckedChangeListener(this::onCheckedChanged_awake);
     }
     private void observeChangeSpeed() {
     }
@@ -174,15 +182,22 @@ public class TouchscreenControlFragment extends Fragment {
     private void observeChangeLedColor() {
     }
     private void observeChangeAwake() {
-        if(viewModel.getAwake().getValue()) {
+        // TODO set up a callback for the wake/sleep AWK, and use that like the CONNECT button to re-enable the button and change its text.
+        // TODO Might need to change sleep to be 4-state like connectionstate to communicate between models easily
+        // TODO (do the catching/callback in the main activity, then listen to it here)
+        if(viewModel.getConnectionState().getValue() == SpheroController.ConnectionState.CONNECTED && viewModel.getAwake().getValue()) {
             button_heading.setEnabled(true);
         } else {
             button_heading.setEnabled(false);
         }
     }
     private void observeResettingHeading() {
-        if(!viewModel.getResettingHeading().getValue()) {
+        if(viewModel.getConnectionState().getValue() == SpheroController.ConnectionState.CONNECTED && !viewModel.getResettingHeading().getValue()) {
             button_heading.setEnabled(true);
         }
+    }
+
+    private void onCheckedChanged_awake(CompoundButton compoundButton, boolean isChecked) {
+        viewModel.setAwake(isChecked);
     }
 }

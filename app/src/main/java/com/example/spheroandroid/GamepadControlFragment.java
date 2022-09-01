@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,20 +23,20 @@ public class GamepadControlFragment extends Fragment {
     public static final String TAG = "GamepadControl";
 
     // Decides what controls to display, indicating the available actions.
-    private enum GamepadMode { DISCONNECTED, ASLEEP, DRIVE, LED_CONFIGURATION }
+    private enum GamepadMode { DISCONNECTED, ASLEEP, DRIVE, HEADING, LED_CONFIGURATION }
 
     private static final int OPACITY_USED = 255;
     private static final int OPACITY_UNUSED = 63;
     // How far the sticks should appear to move when titled
     private final static int PIXELS_THUMBSTICK = 75;
     // Speed factor applied when for holding down certain buttons
-    private final static int SPEED_SLOW = 30;
-    private final static int SPEED_NORMAL = 60;
+    private final static int SPEED_SLOW = 50;
+    private final static int SPEED_NORMAL = 75;
     private final static int SPEED_FAST = 100;
 
     private GamepadMode mode;
     private boolean joystickDeadbanded;
-    private boolean buttonPressedY, buttonPressedB;
+    private boolean buttonHeldY, buttonHeldB;
 
     private SpheroMiniViewModel viewModel;
     private ImageView stick_L;
@@ -44,7 +45,7 @@ public class GamepadControlFragment extends Fragment {
     private ImageView stickEmpty_R;
     private ImageView image_a, image_b, image_x, image_y, image_L1, image_R1, image_plus, image_minus;
     private TextView text_gamepadB, text_gamepadX, text_gamepadY, text_gamepadStickLeft, text_gamepadStickRight,
-            text_gamepadConnect, text_gamepadModeSelected0, text_gamepadModeSelected1,
+            text_gamepadConnect, text_gamepadModeSelected0, text_gamepadModeSelected1, text_gamepadMode,
             text_gamepadMode0, text_gamepadMode1, text_gamepadR1;
 
     public GamepadControlFragment() {
@@ -64,12 +65,14 @@ public class GamepadControlFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_gamepad_control, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(SpheroMiniViewModel.class);
 
         viewModel.getConnectionState().observe(getViewLifecycleOwner(), connectionState -> observeChangeConnectionState());
@@ -101,15 +104,36 @@ public class GamepadControlFragment extends Fragment {
         text_gamepadModeSelected1 = view.findViewById(R.id.text_gamepadModeSelected1);
         text_gamepadMode0 = view.findViewById(R.id.text_gamepadMode0);
         text_gamepadMode1 = view.findViewById(R.id.text_gamepadMode1);
+        text_gamepadMode = view.findViewById(R.id.text_gamepadMode);
         text_gamepadR1 = view.findViewById(R.id.text_gamepadR1);
 
         joystickDeadbanded = true;
-        buttonPressedY = false;
-        buttonPressedB = false;
-        observeChangeConnectionState();
+        buttonHeldY = false;
+        buttonHeldB = false;
+//        observeChangeConnectionState();
 
-        view.setOnGenericMotionListener((view1, motionEvent) -> fragmentOnGenericMotionEvent(motionEvent));
-        view.setOnKeyListener((view12, i, keyEvent) -> fragmentOnKeyEvent(keyEvent));
+        view.setFocusableInTouchMode(true);
+        view.requestFocus();
+        view.setOnGenericMotionListener(new View.OnGenericMotionListener() {
+            @Override
+            public boolean onGenericMotion(View v, MotionEvent motionEvent) {
+                return GamepadControlFragment.this.fragmentOnGenericMotionEvent(motionEvent);
+            }
+        });
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int i, KeyEvent keyEvent) {
+                return GamepadControlFragment.this.fragmentOnKeyEvent(keyEvent);
+            }
+        });
+        viewModel.setSpeed(SPEED_NORMAL);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        // return to normal movement speed
+        viewModel.setSpeed(SpheroMiniViewModel.SPEED_DEFAULT);
     }
 
     private void observeChangeConnectionState() {
@@ -127,7 +151,7 @@ public class GamepadControlFragment extends Fragment {
             case CONNECTED:
                 text_gamepadConnect.setText(R.string.disconnect);
                 image_plus.setImageAlpha(OPACITY_USED);
-                setGamepadMode(GamepadMode.ASLEEP);
+                setGamepadMode(GamepadMode.DRIVE);
                 break;
             case DISCONNECTING:
                 text_gamepadConnect.setText(R.string.disconnecting);
@@ -135,6 +159,11 @@ public class GamepadControlFragment extends Fragment {
                 setGamepadMode(GamepadMode.DISCONNECTED);
                 break;
         }
+        // When enabling/disabling children due to the connection state, make sure that the
+        // gamepad doesn't lose focus. If it loses focus, it loses the ability to process
+        // input events, I think.
+//        getView().setFocusableInTouchMode(true);
+//        getView().requestFocus();
     }
 
     private void observeChangeSpeed() {
@@ -148,7 +177,7 @@ public class GamepadControlFragment extends Fragment {
     }
 
     private void observeChangeAwake() {
-        // Change Wake Up/Sleep text
+        // Change Wake Up/Sleep mode
         if(viewModel.getAwake().getValue()) {
             setGamepadMode(GamepadMode.DRIVE);
         } else {
@@ -158,6 +187,7 @@ public class GamepadControlFragment extends Fragment {
 
     private void setGamepadMode(GamepadMode newMode) {
         // Change joystick/button opacity and labels
+        // Planning to replace this with different layouts to make it easier
         mode = newMode;
         switch(mode) {
             case DISCONNECTED:
@@ -165,10 +195,12 @@ public class GamepadControlFragment extends Fragment {
                 text_gamepadR1.setVisibility(View.INVISIBLE);
                 image_R1.setImageAlpha(OPACITY_UNUSED);
 
+                image_minus.setImageAlpha(OPACITY_UNUSED);
                 text_gamepadModeSelected0.setVisibility(View.INVISIBLE);
                 text_gamepadModeSelected1.setVisibility(View.INVISIBLE);
-                text_gamepadMode0.setTypeface(text_gamepadMode0.getTypeface(), Typeface.NORMAL);
-                text_gamepadMode1.setTypeface(text_gamepadMode1.getTypeface(), Typeface.NORMAL);
+                text_gamepadMode0.setVisibility(View.INVISIBLE);
+                text_gamepadMode1.setVisibility(View.INVISIBLE);
+                text_gamepadMode.setVisibility(View.INVISIBLE);
 
                 text_gamepadStickLeft.setText("");
                 text_gamepadStickRight.setText("");
@@ -190,10 +222,12 @@ public class GamepadControlFragment extends Fragment {
                 text_gamepadR1.setVisibility(View.INVISIBLE);
                 image_R1.setImageAlpha(OPACITY_UNUSED);
 
+                image_minus.setImageAlpha(OPACITY_UNUSED);
                 text_gamepadModeSelected0.setVisibility(View.INVISIBLE);
                 text_gamepadModeSelected1.setVisibility(View.INVISIBLE);
-                text_gamepadMode0.setTypeface(text_gamepadMode0.getTypeface(), Typeface.NORMAL);
-                text_gamepadMode1.setTypeface(text_gamepadMode1.getTypeface(), Typeface.NORMAL);
+                text_gamepadMode0.setVisibility(View.INVISIBLE);
+                text_gamepadMode1.setVisibility(View.INVISIBLE);
+                text_gamepadMode.setVisibility(View.INVISIBLE);
 
                 text_gamepadStickLeft.setText("");
                 text_gamepadStickRight.setText("");
@@ -215,10 +249,14 @@ public class GamepadControlFragment extends Fragment {
                 text_gamepadR1.setVisibility(View.VISIBLE);
                 image_R1.setImageAlpha(OPACITY_USED);
 
+                image_minus.setImageAlpha(OPACITY_USED);
                 text_gamepadModeSelected0.setVisibility(View.VISIBLE);
                 text_gamepadModeSelected1.setVisibility(View.INVISIBLE);
-                text_gamepadMode0.setTypeface(text_gamepadMode0.getTypeface(), Typeface.BOLD);
-                text_gamepadMode1.setTypeface(text_gamepadMode1.getTypeface(), Typeface.NORMAL);
+                text_gamepadMode0.setTypeface(null, Typeface.BOLD);
+                text_gamepadMode1.setTypeface(null, Typeface.NORMAL);
+                text_gamepadMode0.setVisibility(View.VISIBLE);
+                text_gamepadMode1.setVisibility(View.VISIBLE);
+                text_gamepadMode.setVisibility(View.VISIBLE);
 
                 text_gamepadStickLeft.setText(R.string.gamepad_joystick_move);
                 text_gamepadStickRight.setText("");
@@ -228,22 +266,53 @@ public class GamepadControlFragment extends Fragment {
                 text_gamepadB.setVisibility(View.VISIBLE);
                 text_gamepadB.setText(R.string.gamepad_moveFast);
                 text_gamepadX.setVisibility(View.VISIBLE);
-                text_gamepadX.setText(R.string.gamepad_wake);
+                text_gamepadX.setText(R.string.gamepad_sleep);
                 text_gamepadY.setVisibility(View.VISIBLE);
                 text_gamepadY.setText(R.string.gamepad_moveSlow);
                 image_b.setImageAlpha(OPACITY_USED);
                 image_x.setImageAlpha(OPACITY_USED);
                 image_y.setImageAlpha(OPACITY_USED);
                 break;
+            case HEADING:
+                // Now in heading reset mode
+                text_gamepadR1.setVisibility(View.VISIBLE);
+                image_R1.setImageAlpha(OPACITY_USED);
+
+                image_minus.setImageAlpha(OPACITY_UNUSED);
+                text_gamepadModeSelected0.setVisibility(View.INVISIBLE);
+                text_gamepadModeSelected1.setVisibility(View.INVISIBLE);
+                text_gamepadMode0.setVisibility(View.INVISIBLE);
+                text_gamepadMode1.setVisibility(View.INVISIBLE);
+                text_gamepadMode.setVisibility(View.INVISIBLE);
+
+                text_gamepadStickLeft.setText(R.string.gamepad_joystick_heading);
+                text_gamepadStickRight.setText("");
+                stick_L.setImageAlpha(OPACITY_USED);
+                stick_R.setImageAlpha(OPACITY_UNUSED);
+
+                text_gamepadB.setVisibility(View.INVISIBLE);
+                text_gamepadB.setText("");
+                text_gamepadX.setVisibility(View.INVISIBLE);
+                text_gamepadX.setText("");
+                text_gamepadY.setVisibility(View.INVISIBLE);
+                text_gamepadY.setText("");
+                image_b.setImageAlpha(OPACITY_UNUSED);
+                image_x.setImageAlpha(OPACITY_UNUSED);
+                image_y.setImageAlpha(OPACITY_UNUSED);
+                break;
             case LED_CONFIGURATION:
                 // Now in LED config mode
                 text_gamepadR1.setVisibility(View.INVISIBLE);
                 image_R1.setImageAlpha(OPACITY_UNUSED);
 
+                image_minus.setImageAlpha(OPACITY_USED);
                 text_gamepadModeSelected0.setVisibility(View.INVISIBLE);
                 text_gamepadModeSelected1.setVisibility(View.VISIBLE);
-                text_gamepadMode0.setTypeface(text_gamepadMode0.getTypeface(), Typeface.NORMAL);
-                text_gamepadMode1.setTypeface(text_gamepadMode1.getTypeface(), Typeface.BOLD);
+                text_gamepadMode0.setTypeface(null, Typeface.NORMAL);
+                text_gamepadMode1.setTypeface(null, Typeface.BOLD);
+                text_gamepadMode0.setVisibility(View.VISIBLE);
+                text_gamepadMode1.setVisibility(View.VISIBLE);
+                text_gamepadMode.setVisibility(View.VISIBLE);
 
                 text_gamepadStickLeft.setText(R.string.gamepad_joystick_hue);
                 text_gamepadStickRight.setText(R.string.gamepad_joystick_brightness);
@@ -287,6 +356,9 @@ public class GamepadControlFragment extends Fragment {
         stick_R.setLayoutParams(params_R);
 
         switch(mode) {
+            // TODO: better heading setting. Tapping R1 without touching the joystick should keep the sphero facing the same direction.
+            // TODO joystick deadband should be higher like color/brightness selection for heading.
+            case HEADING: // fall through to Drive
             case DRIVE:
                 // Send stop command if joystick is near the center
                 if(xaxis_L > -0.1 && xaxis_L < 0.1 && yaxis_L > -0.1 && yaxis_L < 0.1) {
@@ -297,25 +369,29 @@ public class GamepadControlFragment extends Fragment {
                 } else {
                     // Move normally
                     joystickDeadbanded = false;
-                    // Bind the input within the range
-                    // TODO: determine if this matters
+                    // Bind the input within the range so they have a radius of 1, as defined in the view model
+                    // TODO: determine if this matters, if it happens automatically, is guaranteed
 
                     viewModel.postRoll(xaxis_L, yaxis_L);
                 }
                 break;
             case LED_CONFIGURATION:
                 // Change color when joystick is outside center
-                if(xaxis_L < -0.2 || xaxis_L > 0.2 || yaxis_L < -0.2 || yaxis_L > 0.2) {
+                if(xaxis_L < -0.5 || xaxis_L > 0.5 || yaxis_L < -0.5 || yaxis_L > 0.5) {
                     // Convert axes to 360 degree angle to hue
-                    double radian = Math.atan2(yaxis_L, xaxis_L);
+                    double radian = Math.atan2(yaxis_L, xaxis_L) + Math.PI/2;
+                    if(radian < 0)
+                        radian += 2 * Math.PI;
                     int hue = (int)(radian / (Math.PI * 2) * 100);
 //                    float[] hsv = {hue, 1, 1};
 //                    int argb = Color.HSVToColor(hsv);
                     viewModel.setLedColor(hue);
                 }
-                if(xaxis_R < -0.2 || xaxis_R > 0.2 || yaxis_R < -0.2 || yaxis_R > 0.2) {
+                if(xaxis_R < -0.5 || xaxis_R > 0.5 || yaxis_R < -0.5 || yaxis_R > 0.5) {
                     // Convert axes to 360 degree angle to brightness level
-                    double radian = Math.atan2(yaxis_L, xaxis_L);
+                    double radian = Math.atan2(yaxis_R, xaxis_R) + Math.PI/2;
+                    if(radian < 0)
+                        radian += 2 * Math.PI;
                     int brightness = (int)(radian / (Math.PI * 2) * 100);
                     viewModel.setLedBrightness(brightness);
                 }
@@ -327,10 +403,12 @@ public class GamepadControlFragment extends Fragment {
     }
 
     public boolean fragmentOnKeyEvent(KeyEvent event) {
-        boolean handled = true;
+        boolean handled = false;
 
         if((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-            boolean pressed = event.getAction() == KeyEvent.ACTION_DOWN;
+            boolean held = event.getAction() == KeyEvent.ACTION_DOWN;
+            boolean pressed = held && event.getRepeatCount() == 0; // Only once, until released
+            boolean released = event.getAction() == KeyEvent.ACTION_UP;
             int keyCode = event.getKeyCode();
             // A/B and X/Y are switched on the nintendo controllers. Do this flip here so that
             // everything else matches with what visually appears on the controller.
@@ -351,21 +429,21 @@ public class GamepadControlFragment extends Fragment {
             // Now, actually process the button press:
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BUTTON_A:
-                    setKeyImageResource(pressed, image_a, R.drawable.switch_a, R.drawable.switch_a_light);
+                    setKeyImageResource(held, image_a, R.drawable.switch_a, R.drawable.switch_a_light);
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_B:
-                    setKeyImageResource(pressed, image_b, R.drawable.switch_b, R.drawable.switch_b_light);
-                    buttonPressedB = pressed;
-                    if(mode != GamepadMode.DRIVE) {
+                    setKeyImageResource(held, image_b, R.drawable.switch_b, R.drawable.switch_b_light);
+                    buttonHeldB = held;
+                    if (mode != GamepadMode.DRIVE) {
                         handled = true;
                         break;
                     }
                     // Set ball speed
-                    if(pressed) {
+                    if (pressed) {
                         viewModel.setSpeed(SPEED_FAST);
-                    } else {
-                        if(buttonPressedY) {
+                    } else if(released) {
+                        if (buttonHeldY) {
                             viewModel.setSpeed(SPEED_SLOW);
                         } else {
                             viewModel.setSpeed(SPEED_NORMAL);
@@ -374,26 +452,28 @@ public class GamepadControlFragment extends Fragment {
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_X:
-                    setKeyImageResource(pressed, image_x, R.drawable.switch_x, R.drawable.switch_x_light);
-                    if(mode != GamepadMode.DRIVE) {
+                    setKeyImageResource(held, image_x, R.drawable.switch_x, R.drawable.switch_x_light);
+                    if (mode != GamepadMode.DRIVE && mode != GamepadMode.ASLEEP) {
                         handled = true;
                         break;
                     }
-                    viewModel.setAwake(!viewModel.getAwake().getValue());
+                    if(pressed) {
+                        viewModel.setAwake(!viewModel.getAwake().getValue());
+                    }
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_Y:
-                    setKeyImageResource(pressed, image_y, R.drawable.switch_y, R.drawable.switch_y_light);
-                    buttonPressedY = pressed;
-                    if(mode != GamepadMode.DRIVE) {
+                    setKeyImageResource(held, image_y, R.drawable.switch_y, R.drawable.switch_y_light);
+                    buttonHeldY = held;
+                    if (mode != GamepadMode.DRIVE) {
                         handled = true;
                         break;
                     }
                     // Set ball speed
-                    if(pressed) {
+                    if (pressed) {
                         viewModel.setSpeed(SPEED_SLOW);
-                    } else {
-                        if(buttonPressedB) {
+                    } else if(released) {
+                        if (buttonHeldB) {
                             viewModel.setSpeed(SPEED_FAST);
                         } else {
                             viewModel.setSpeed(SPEED_NORMAL);
@@ -402,20 +482,30 @@ public class GamepadControlFragment extends Fragment {
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_L1:
-                    setKeyImageResource(pressed, image_L1, R.drawable.switch_lb, R.drawable.switch_lb_light);
+                    setKeyImageResource(held, image_L1, R.drawable.switch_lb, R.drawable.switch_lb_light);
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_R1:
-                    setKeyImageResource(pressed, image_R1, R.drawable.switch_rb, R.drawable.switch_rb_light);
-                    if(mode != GamepadMode.DRIVE) {
+                    setKeyImageResource(held, image_R1, R.drawable.switch_rb, R.drawable.switch_rb_light);
+                    if (mode != GamepadMode.DRIVE && mode != GamepadMode.HEADING) {
                         handled = true;
                         break;
                     }
-                    viewModel.setResettingHeading(pressed);
+                    if(pressed) {
+                        setGamepadMode(GamepadMode.HEADING);
+                        viewModel.setResettingHeading(true);
+                    } else if(released) {
+                        setGamepadMode(GamepadMode.DRIVE);
+                        viewModel.setResettingHeading(false);
+                    }
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_SELECT:
-                    setKeyImageResource(pressed, image_minus, R.drawable.switch_minus, R.drawable.switch_minus_light);
+                    setKeyImageResource(held, image_minus, R.drawable.switch_minus, R.drawable.switch_minus_light);
+                    if (mode != GamepadMode.DRIVE && mode != GamepadMode.LED_CONFIGURATION) {
+                        handled = true;
+                        break;
+                    }
                     if(pressed) {
                         // Check old mode, change it, and process the new mode
                         switch(mode) {
@@ -430,7 +520,7 @@ public class GamepadControlFragment extends Fragment {
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_START:
-                    setKeyImageResource(pressed, image_plus, R.drawable.switch_plus, R.drawable.switch_plus_light);
+                    setKeyImageResource(held, image_plus, R.drawable.switch_plus, R.drawable.switch_plus_light);
 
                     switch(viewModel.getConnectionState().getValue()) {
                         case DISCONNECTED:
@@ -447,6 +537,20 @@ public class GamepadControlFragment extends Fragment {
                             break;
                     }
 
+                    handled = true;
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_THUMBL:
+                    setKeyImageResource(held, stick_L, R.drawable.switch_left_stick, R.drawable.switch_left_stick_light);
+                    if(mode == GamepadMode.LED_CONFIGURATION) {
+                        viewModel.setLedColor(100);
+                    }
+                    handled = true;
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_THUMBR:
+                    setKeyImageResource(held, stick_R, R.drawable.switch_right_stick, R.drawable.switch_right_stick_light);
+                    if(mode == GamepadMode.LED_CONFIGURATION) {
+                        viewModel.setLedBrightness(100);
+                    }
                     handled = true;
                     break;
             }

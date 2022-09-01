@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout_touchscreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".TouchscreenControlFragment">
@@ -126,8 +127,8 @@
             android:id="@+id/image_touchJoystickCore"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/circle_core"
             android:scaleType="fitXY"
+            android:src="@drawable/circle_core"
             app:layout_constraintBottom_toBottomOf="@+id/image_touchJoystick"
             app:layout_constraintEnd_toEndOf="@+id/image_touchJoystick"
             app:layout_constraintStart_toStartOf="@+id/image_touchJoystick"
