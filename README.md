@@ -5,6 +5,11 @@ I started this project because I wanted to study Bluetooth LE communication and 
 
 Much of the Bluetooth communication protocol code is ported from this Python sphero library: https://github.com/MProx/Sphero_mini
 
+<p align="middle">
+  <img src="/picture_1.png" width="256" />
+  <img src="/picture_2.png" width="256" /> 
+</p>
+
 ## Features
 - Connection to spheros via MAC address
 - Sphero Mini controller
