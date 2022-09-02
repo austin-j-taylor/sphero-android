@@ -16,7 +16,7 @@
     </string>
     <string name="missingBluetoothSupport">This device does not support bluetooth.\nThis app needs it to connect to sphero devices.
     </string>
-    <string name="scanFailed">Could not find the sphero.\n\nIf the sphero is unlit, it may be in deep sleep.\nTry plugging it into a charging cable to reset it.\nTry turning off Bluetooth and turning it back on.
+    <string name="scanFailed">Could not find the sphero.\n\nMake sure Bluetooth is enabled.\nIf the sphero is unlit, it may be in deep sleep.\nTry plugging it into a charging cable to reset it.\nTry turning off Bluetooth and turning it back on.
     </string>
     <string name="deleteConfig">
         This will delete saved MAC addresses.
@@ -29,9 +29,13 @@
     <string name="no">No</string>
     <!-- Gamepad strings -->
     <string name="connect">Connect</string>
+    <string name="connected">Connected</string>
     <string name="connecting">Connecting...</string>
     <string name="disconnect">Disconnect</string>
+    <string name="disconnected">Disconnected</string>
     <string name="disconnecting">Disconnecting...</string>
+    <string name="discovering_servies">Discovering services</string>
+    <string name="initializing">Initializing</string>
     <string name="gamepad_joystick_move">Move</string>
     <string name="gamepad_joystick_heading">Set Heading</string>
     <string name="gamepad_joystick_hue">LED Hue\n(Click) for white</string>

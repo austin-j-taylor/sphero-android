@@ -68,15 +68,13 @@ public class SpheroMiniActivity extends AppCompatActivity {
     // Views
     private ConstraintLayout constraintLayout_connected;
     private ToggleButton button_connect;
-    private ImageButton button_battery;
-    private TextView text_battery;
+    private TextView text_battery, text_connetionStatus;
 
     // Broadcast receiver for bluetooth callback actions.
     // If a new action is added, make sure to add it to the filter in onCreate.
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            // TODO process GATT broadcasts to update connection status text with things like "scanning... gat server found...
             switch (action) {
 //                case BluetoothDevice.ACTION_ACL_CONNECTED:
 //                    if (ActivityCompat.checkSelfPermission(SpheroMiniActivity.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -87,6 +85,12 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //
 //                    }
 //                    break;
+                case SpheroController.ACTION_GATT_CONNECTED:
+                    text_connetionStatus.setText(R.string.discovering_servies);
+                    break;
+                case SpheroController.ACTION_GATT_SERVICES_DISCOVERED:
+                    text_connetionStatus.setText(R.string.initializing);
+                    break;
                 case SpheroController.ACTION_BATTERY_AVAILABLE:
                     double vbatt = intent.getDoubleExtra(SpheroController.EXTRA_BATTERY_VALUE, 0);
                     if(vbatt < SPHERO_BATTERY_MIN)
@@ -158,7 +162,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
 
         constraintLayout_connected = findViewById(R.id.constraintLayout_connected);
         button_connect = findViewById(R.id.button_connect);
-        button_battery = findViewById(R.id.button_battery);
+        text_connetionStatus = findViewById(R.id.text_connectionStatus);
         text_battery = findViewById(R.id.text_battery);
 
         // Set control fragment dropdown options
@@ -205,6 +209,8 @@ public class SpheroMiniActivity extends AppCompatActivity {
         // Register for broadcasts when bluetooth devices are discovered/connected/etc.,
         // and for receiving data sent by the sphero (like battery updates)
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(SpheroController.ACTION_GATT_CONNECTED);
+        filter.addAction(SpheroController.ACTION_GATT_SERVICES_DISCOVERED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothDevice.ACTION_UUID);
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
@@ -348,29 +354,33 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //                constraintLayout_connected.setVisibility(View.INVISIBLE);
                 MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
                 constraintLayout_connected.setEnabled(false);
-                button_connect.setTextOff(getString(R.string.connect));
+//                button_connect.setTextOff(getString(R.string.connect));
                 button_connect.setEnabled(true);
                 button_connect.setChecked(false);
+                text_connetionStatus.setText(R.string.disconnected);
                 viewModel.setAwake(false); // This will call observeChangeAwake, but because the state is disconnected, it won't send a command to the sphero.
                 break;
             case CONNECTING:
 //                constraintLayout_connected.setVisibility(View.INVISIBLE);
                 MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
                 constraintLayout_connected.setEnabled(false);
-                button_connect.setTextOn(getString(R.string.connecting));
+//                button_connect.setTextOn(getString(R.string.connecting));
                 button_connect.setEnabled(false);
                 button_connect.setChecked(true);
+                text_connetionStatus.setText(R.string.connecting);
                 // Communicate with sphero API to connect to it
                 sphero.connect();
 
                 break;
             case CONNECTED:
+                // TODO Enter Reset Heading upon connecting to the sphero. Have some UI element indicating to the user what to do
 //                constraintLayout_connected.setVisibility(View.VISIBLE);
                 MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, true);
                 constraintLayout_connected.setEnabled(true);
-                button_connect.setTextOn(getString(R.string.disconnect));
+//                button_connect.setTextOn(getString(R.string.disconnect));
                 button_connect.setEnabled(true);
                 button_connect.setChecked(true);
+                text_connetionStatus.setText(R.string.connected);
                 // If we just connected, we also want to wake up the sphero
                 viewModel.setAwake(true);
                 // Send configuration commands
@@ -382,9 +392,10 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //                constraintLayout_connected.setVisibility(View.INVISIBLE);
                 MainActivity.setViewAndChildrenEnabled(constraintLayout_connected, false);
                 constraintLayout_connected.setEnabled(false);
-                button_connect.setTextOff(getString(R.string.disconnecting));
+//                button_connect.setTextOff(getString(R.string.disconnecting));
                 button_connect.setEnabled(false);
                 button_connect.setChecked(false);
+                text_connetionStatus.setText(R.string.disconnecting);
                 // Communicate with sphero API to disconnect from it
                 sphero.disconnect();
                 break;
@@ -436,6 +447,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //            int argb = viewModel.getLedColor().getValue();
 //            viewModel.setLedColor(argb);
             observeChangeLedColor(); // Return the LED color to normal
+            lastHeading = 0;
             sphero.setBackLEDBrightness(0);
             sphero.resetHeading();
         }
@@ -451,7 +463,6 @@ public class SpheroMiniActivity extends AppCompatActivity {
         double x = viewModel.getRollX().getValue() * 256;
         double y = viewModel.getRollY().getValue() * 256;
         double maxSpeed = viewModel.getSpeed().getValue() / 100f;
-
         if(viewModel.getResettingHeading().getValue()) {
             // Aiming.
             int heading = (int)Math.toDegrees(Math.atan2(y, x)) + 90;

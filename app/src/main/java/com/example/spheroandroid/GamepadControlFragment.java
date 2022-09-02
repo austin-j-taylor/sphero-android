@@ -30,8 +30,8 @@ public class GamepadControlFragment extends Fragment {
     // How far the sticks should appear to move when titled
     private final static int PIXELS_THUMBSTICK = 75;
     // Speed factor applied when for holding down certain buttons
-    private final static int SPEED_SLOW = 50;
-    private final static int SPEED_NORMAL = 75;
+    private final static int SPEED_SLOW = 40;
+    private final static int SPEED_NORMAL = 60;
     private final static int SPEED_FAST = 100;
 
     private GamepadMode mode;
@@ -355,10 +355,16 @@ public class GamepadControlFragment extends Fragment {
         stick_L.setLayoutParams(params_L);
         stick_R.setLayoutParams(params_R);
 
+
         switch(mode) {
             // TODO: better heading setting. Tapping R1 without touching the joystick should keep the sphero facing the same direction.
-            // TODO joystick deadband should be higher like color/brightness selection for heading.
-            case HEADING: // fall through to Drive
+            case HEADING:
+                // Send stop command if joystick is near the center
+                if(xaxis_L < -0.5 || xaxis_L > 0.5 || yaxis_L < -0.5 || yaxis_L > 0.5) {
+                    // Set the heading based on the joystick angle. SpheroMiniActivity takes care of this.
+                    viewModel.postRoll(xaxis_L, yaxis_L);
+                }
+                break;
             case DRIVE:
                 // Send stop command if joystick is near the center
                 if(xaxis_L > -0.1 && xaxis_L < 0.1 && yaxis_L > -0.1 && yaxis_L < 0.1) {
@@ -369,8 +375,6 @@ public class GamepadControlFragment extends Fragment {
                 } else {
                     // Move normally
                     joystickDeadbanded = false;
-                    // Bind the input within the range so they have a radius of 1, as defined in the view model
-                    // TODO: determine if this matters, if it happens automatically, is guaranteed
 
                     viewModel.postRoll(xaxis_L, yaxis_L);
                 }
@@ -470,12 +474,10 @@ public class GamepadControlFragment extends Fragment {
                         break;
                     }
                     // Set ball speed
-                    if (pressed) {
+                    if (pressed && !buttonHeldB) {
                         viewModel.setSpeed(SPEED_SLOW);
                     } else if(released) {
-                        if (buttonHeldB) {
-                            viewModel.setSpeed(SPEED_FAST);
-                        } else {
+                        if (!buttonHeldB) {
                             viewModel.setSpeed(SPEED_NORMAL);
                         }
                     }
@@ -521,34 +523,35 @@ public class GamepadControlFragment extends Fragment {
                     break;
                 case KeyEvent.KEYCODE_BUTTON_START:
                     setKeyImageResource(held, image_plus, R.drawable.switch_plus, R.drawable.switch_plus_light);
-
-                    switch(viewModel.getConnectionState().getValue()) {
-                        case DISCONNECTED:
-                            viewModel.setConnectionState(SpheroController.ConnectionState.CONNECTING);
-                            break;
-                        case CONNECTING:
-                            // Do nothing
-                            break;
-                        case CONNECTED:
-                            viewModel.setConnectionState(SpheroController.ConnectionState.DISCONNECTING);
-                            break;
-                        case DISCONNECTING:
-                            // Do nothing
-                            break;
+                    if(pressed) {
+                        switch(viewModel.getConnectionState().getValue()) {
+                            case DISCONNECTED:
+                                viewModel.setConnectionState(SpheroController.ConnectionState.CONNECTING);
+                                break;
+                            case CONNECTING:
+                                // Do nothing
+                                break;
+                            case CONNECTED:
+                                viewModel.setConnectionState(SpheroController.ConnectionState.DISCONNECTING);
+                                break;
+                            case DISCONNECTING:
+                                // Do nothing
+                                break;
+                        }
                     }
 
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_THUMBL:
                     setKeyImageResource(held, stick_L, R.drawable.switch_left_stick, R.drawable.switch_left_stick_light);
-                    if(mode == GamepadMode.LED_CONFIGURATION) {
+                    if(held && mode == GamepadMode.LED_CONFIGURATION) {
                         viewModel.setLedColor(100);
                     }
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_THUMBR:
                     setKeyImageResource(held, stick_R, R.drawable.switch_right_stick, R.drawable.switch_right_stick_light);
-                    if(mode == GamepadMode.LED_CONFIGURATION) {
+                    if(held && mode == GamepadMode.LED_CONFIGURATION) {
                         viewModel.setLedBrightness(100);
                     }
                     handled = true;

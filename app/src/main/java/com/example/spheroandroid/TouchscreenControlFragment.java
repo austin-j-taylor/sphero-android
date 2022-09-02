@@ -153,9 +153,8 @@ public class TouchscreenControlFragment extends Fragment {
                     // Stop setting heading, or stop rolling
                     if(Boolean.TRUE.equals(viewModel.getResettingHeading().getValue())) {// null check
                         viewModel.setResettingHeading(false);
-                        viewModel.postRoll(0, 0);
-                    } else
-                        viewModel.postRoll(0, 0);
+                    }
+                    viewModel.postRoll(0, 0);
 
                     return true;
             }

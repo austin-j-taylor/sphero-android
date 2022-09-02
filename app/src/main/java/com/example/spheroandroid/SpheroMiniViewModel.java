@@ -31,7 +31,6 @@ public class SpheroMiniViewModel extends ViewModel {
         connectionState.setValue(state);
     }
     public void setSpeed(int speed) {
-        Log.i("SpheroMiniViewModel", "" + speed);
         this.speed.setValue(speed);
     }
     public void setLedBrightness(int ledBrightness) {

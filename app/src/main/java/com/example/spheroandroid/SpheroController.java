@@ -42,6 +42,10 @@ import java.util.UUID;
 public class SpheroController {
 
     public static final String TAG = "SpheroController";
+    public final static String ACTION_GATT_CONNECTED =
+            "com.example.controlapp.SpheroController.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED =
+            "com.example.controlapp.SpheroController.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_BATTERY_AVAILABLE =
             "com.example.controlapp.SpheroController.ACTION_BATTERY_AVAILABLE";
     public final static String ACTION_SPHERO_CONNECTION_STATE_CHANGE =
@@ -381,7 +385,7 @@ public class SpheroController {
             @Override
             public void onReceive(Context context, Intent intent) {
                 final String action = intent.getAction();
-                if (BluetoothSpheroController.ACTION_GATT_CONNECTED.equals(action)) {
+                if (ACTION_GATT_CONNECTED.equals(action)) {
                     // Now connected
                     // Do nothing, since more initialization needs to be done below.
                     // The BluetoothSpheroController is listening to the same ACTION_GATT_CONNECTED
@@ -395,7 +399,7 @@ public class SpheroController {
                     newIntent.putExtra(EXTRA_SPHERO_CONNECTION_STATE, ConnectionState.DISCONNECTED);
                     context.sendBroadcast(newIntent); // send it up
 
-                } else if (BluetoothSpheroController.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                } else if (ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                     // Show all the supported services and characteristics on the user interface.
                     identifyGattServices(spheroService.getSupportedGattServices());
                     // Start listening to responses sent by the sphero
@@ -444,9 +448,9 @@ public class SpheroController {
 
         private IntentFilter makeGattUpdateIntentFilter() {
             final IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BluetoothSpheroController.ACTION_GATT_CONNECTED);
+            intentFilter.addAction(ACTION_GATT_CONNECTED);
             intentFilter.addAction(BluetoothSpheroController.ACTION_GATT_DISCONNECTED);
-            intentFilter.addAction(BluetoothSpheroController.ACTION_GATT_SERVICES_DISCOVERED);
+            intentFilter.addAction(ACTION_GATT_SERVICES_DISCOVERED);
             intentFilter.addAction(BluetoothSpheroController.ACTION_DATA_AVAILABLE);
             intentFilter.addAction(BluetoothSpheroController.ACTION_WRITE_SUCCESSFUL);
             return intentFilter;
@@ -1120,12 +1124,8 @@ public class SpheroController {
         // Reads and writes to the sphero over Bluetooth.
         private class BluetoothSpheroController {
             public static final String TAG = "BluetoothSpheroController";
-            public final static String ACTION_GATT_CONNECTED =
-                    "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
             public final static String ACTION_GATT_DISCONNECTED =
                     "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
-            public final static String ACTION_GATT_SERVICES_DISCOVERED =
-                    "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
             public final static String ACTION_DATA_AVAILABLE =
                     "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
             public final static String ACTION_WRITE_SUCCESSFUL =

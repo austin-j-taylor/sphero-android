@@ -1,7 +1,7 @@
 ## Description
 **sphero-android** is a program and library I am working on to control sphero devices from an Android phone.
 
-I started this project because I wanted to study Bluetooth LE communication and control the sphero toy without a custom interface. I also wanted to explore other ways of controlling sphero devices (such as using a video game controller).
+I started this project because I wanted to study Bluetooth LE communication and control the sphero toy without a custom interface. I also wanted to explore other ways of controlling sphero devices (such as using a video game controller). It has also been a method for me to learn Android development.
 
 Much of the Bluetooth communication protocol code is ported from this Python sphero library: https://github.com/MProx/Sphero_mini
 
