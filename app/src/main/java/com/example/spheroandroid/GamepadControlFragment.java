@@ -191,6 +191,7 @@ public class GamepadControlFragment extends Fragment {
         mode = newMode;
         switch(mode) {
             case DISCONNECTED:
+                // TODO Also change visibility of the circles behind the joystick images (image_stickEmpty_L/R)
                 // Disconnected. Hide everything except the connect button.
                 text_gamepadR1.setVisibility(View.INVISIBLE);
                 image_R1.setImageAlpha(OPACITY_UNUSED);

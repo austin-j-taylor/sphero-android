@@ -54,6 +54,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
     public static final String TAG = "SpheroMiniActivity";
     // Range in battery voltages for the sphero, used to approximate battery charge % from voltage.
     // May need to be tuned for your own sphero, but it's approximating a nonlinear curve anyway.
+    // TODO: there exists a GATT battery service that actually gives a battery percentage. Integrate that instead.
     private final static double SPHERO_BATTERY_MIN = 3.45;
     private final static double SPHERO_BATTERY_MAX = 4.15;
 
@@ -367,7 +368,7 @@ public class SpheroMiniActivity extends AppCompatActivity {
 //                button_connect.setTextOn(getString(R.string.connecting));
                 button_connect.setEnabled(false);
                 button_connect.setChecked(true);
-                text_connetionStatus.setText(R.string.connecting);
+                text_connetionStatus.setText(R.string.scanning);
                 // Communicate with sphero API to connect to it
                 sphero.connect();
 

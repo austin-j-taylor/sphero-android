@@ -668,7 +668,7 @@ public class SpheroController {
 //            byte[] output_unchecked = {SpheroConstants.start, flag_requestResponse, deviceID, commandID, sequence};
 //            byte[] output = new byte[output_unchecked.length + 2]; // one more byte for the checksum, one more for the end marker
             output[0] = SpheroConstants.start;
-            output[1] = SpheroConstants.requestsResponse;
+            output[1] = SpheroConstants.requestsResponse | SpheroConstants.resetsInactivityTimeout;
             output[2] = deviceID;
             output[3] = commandID;
             output[4] = sequence;
@@ -922,7 +922,6 @@ public class SpheroController {
                                         intent.putExtra(EXTRA_BATTERY_VALUE, vbatt);
                                         parentContext.sendBroadcast(intent);
                                         handled = true;
-
                                         break;
                                 }
                                 break;

@@ -1,3 +1,6 @@
+packet sniffer/*.txt
+
+
 # Built application files
 *.apk
 *.aar
